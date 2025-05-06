@@ -1,0 +1,45 @@
+# This code is part of Qiskit.
+#
+# (C) Copyright IBM 2021.
+#
+# This code is licensed under the Apache License, Version 2.0. You may
+# obtain a copy of this license in the LICENSE.txt file in the root directory
+# of this source tree or at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# Any modifications or derivative works of this code must retain this
+# copyright notice, and modified files need to carry a notice indicating
+# that they have been altered from the originals.
+
+name: 'Install PSI4'
+description: 'Installs conda PSI4'
+inputs:
+  os:
+    description: 'OS'
+    required: true
+  python-version:
+    description: 'Python version'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - run : |
+        source "$CONDA/etc/profile.d/conda.sh"
+        conda activate psi4env
+        if [[ "${{ inputs.os }}" == "windows-2019" ]]; then
+          release=1.6
+          echo "installs psi4 release $release"
+          conda install -y psi4=$release python=${{ inputs.python-version }} -c conda-forge -c psi4/label/dev
+          psi4 --test
+        elif [[ "${{ inputs.os }}" == "ubuntu-latest" && "${{ inputs.python-version }}" == "3.7" ]]; then
+          release=2.6.0
+          echo "installs libint2 release $release"
+          conda install -y libint2=$release -c psi4
+          release=1.5
+          echo "installs psi4 release $release"
+          conda install -y psi4=$release python=${{ inputs.python-version }} -c psi4
+          pip install -U numpy
+        else
+          echo 'installs psi4 stable release'
+          conda install -y psi4 python=${{ inputs.python-version }} -c psi4
+        fi
+      shell: bash
